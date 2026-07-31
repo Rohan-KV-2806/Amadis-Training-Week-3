@@ -1,0 +1,135 @@
+-- ==========================================
+-- 1. TABLE CREATION
+-- ==========================================
+
+CREATE TABLE employees(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(20),
+    role VARCHAR(20),
+    email VARCHAR(20),
+    salary REAL
+);
+
+-- ==========================================
+-- 2. CRUD: CREATE (INSERT)
+-- ==========================================
+
+INSERT INTO employees (name, role, email, salary) 
+VALUES 
+('Rohan', 'Software Devloper', 'rohan@gmail.com', 34000.00), 
+('Farhan', 'Software Developer', 'Farhan@gmail.com', 34000.00);
+
+INSERT INTO employees (name, role, email, salary) 
+VALUES 
+('Adhil', 'Backend Dev', 'adhil@gmail.com', 60000.00),
+('Vijay', 'Frontend Dev', 'vijay@gmail.com', 55000.00),
+('Aananth', 'Database Admin', 'aananth@gmail.com', 75000.00),
+('Meow', 'QA Tester', 'meow@gmail.com', 45000.00),
+('meowmeow', 'Intern', 'meowmeow@gmail.com', 30000.00);
+
+-- ==========================================
+-- 3. CRUD: READ (SELECT)
+-- ==========================================
+
+SELECT * FROM employees;
+
+SELECT name, salary FROM employees WHERE salary > 40000;
+
+-- ==========================================
+-- 4. CRUD: UPDATE
+-- ==========================================
+
+UPDATE employees 
+SET role = 'Senior Software Developer', salary = 45000.00 
+WHERE name = 'Rohan';
+
+UPDATE employees 
+SET salary = 38000.00 
+WHERE role = 'Software Developer';
+
+-- ==========================================
+-- 5. CRUD: DELETE
+-- ==========================================
+
+-- DELETE FROM employees WHERE name = 'Farhan';
+
+-- ==========================================
+-- 6. VIEWS (The Saved Search)
+-- ==========================================
+
+-- Create a view of people making over 40k
+CREATE VIEW high_earners AS
+SELECT name, role, salary FROM employees WHERE salary > 40000;
+CREATE VIEW interns AS
+SELECT name, role, salary FROM employees WHERE role = 'Intern';
+
+SELECT * FROM high_earners;
+SELECT * FROM interns;
+
+-- ==========================================
+-- 7. FUNCTIONS (The Calculator)
+-- ==========================================
+
+-- Function to calculate bonus (10% unless they are an intern)
+CREATE OR REPLACE FUNCTION calculate_bonus (x INT)
+RETURNS REAL AS $$ 
+DECLARE 
+    emp_salary REAL;
+    emp_role VARCHAR;
+BEGIN
+    SELECT salary, role INTO emp_salary, emp_role 
+    FROM employees 
+    WHERE id = x;
+
+    IF emp_role = 'Intern' THEN
+        RETURN 0;
+    ELSE
+        RETURN emp_salary * 0.10;
+    END IF;
+END;
+ $$ LANGUAGE plpgsql;
+
+SELECT calculate_bonus(2);
+
+SELECT name, calculate_bonus(id) FROM employees;
+
+CREATE OR REPLACE FUNCTION add_employee(
+    emp_name VARCHAR, 
+    emp_role VARCHAR, 
+    emp_email VARCHAR, 
+    emp_salary REAL
+) 
+RETURNS VOID AS $$ 
+BEGIN
+    INSERT INTO employees (name, role, email, salary) 
+    VALUES (emp_name, emp_role, emp_email, emp_salary);
+END;
+ $$ LANGUAGE plpgsql;
+
+SELECT add_employee('Ghost', 'CEO', 'ghost@gmail.com', 100000.00);
+
+-- ==========================================
+-- 8. PROCEDURES (The Robot Worker)
+-- ==========================================
+
+CREATE OR REPLACE PROCEDURE transfer_salary(
+    sender_id INT, 
+    receiver_id INT, 
+    amount REAL
+)
+LANGUAGE plpgsql
+AS $$ BEGIN
+
+    UPDATE employees 
+    SET salary = salary - amount 
+    WHERE id = sender_id;
+
+    UPDATE employees 
+    SET salary = salary + amount 
+    WHERE id = receiver_id;
+    COMMIT;
+END;
+ $$;
+
+-- Calling the procedure 
+CALL transfer_salary(1, 2, 5000.00);
