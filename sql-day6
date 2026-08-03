@@ -1,0 +1,60 @@
+CREATE SEQUENCE employee_seq
+START 1
+INCREMENT 1;
+
+CREATE TABLE Departments (
+    Department_ID SERIAL PRIMARY KEY,
+    Department_Name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE Students (
+    Student_ID SERIAL PRIMARY KEY,
+    Student_Name VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    Department_ID INT,
+    FOREIGN KEY (Department_ID)
+        REFERENCES Departments(Department_ID)
+);
+
+CREATE TABLE Employees (
+    Employee_ID INT PRIMARY KEY DEFAULT nextval('employee_seq'),
+    Employee_Name VARCHAR(50) NOT NULL,
+    Salary NUMERIC(10,2)
+);
+
+CREATE INDEX idx_student_name
+ON Students(Student_Name);
+
+INSERT INTO Departments (Department_Name) VALUES
+('Computer Science'),
+('Mechanical'),
+('Electrical');
+
+INSERT INTO Students (Student_Name, Email, Department_ID) VALUES
+('Rohan', 'rohan@gmail.com', 1),
+('Farhan', 'farhan@gmail.com', 2),
+('Anjali', 'anjali@gmail.com', 3);
+
+INSERT INTO Employees (Employee_Name, Salary) VALUES
+('Karthik', 45000),
+('Meena', 52000),
+('Arun', 48000);
+
+SELECT * FROM Students
+WHERE Student_Name = 'Rohan';
+
+SELECT * FROM Employees;
+
+SELECT nextval('employee_seq');
+
+INSERT INTO Students (Student_ID, Student_Name, Email, Department_ID) VALUES
+(1, 'Kumar', 'kumar@gmail.com', 1);
+
+INSERT INTO Students (Student_Name, Email, Department_ID) VALUES
+('Rahul', 'rohan@gmail.com', 2);
+
+INSERT INTO Students (Student_Name, Email, Department_ID) VALUES
+(NULL, 'test@gmail.com', 1);
+
+INSERT INTO Students (Student_Name, Email, Department_ID) VALUES
+('Arun', 'arun@gmail.com', 999);
