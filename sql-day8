@@ -1,0 +1,128 @@
+-- Create the customers table
+CREATE TABLE customers (
+    id INT,
+    name VARCHAR(50),
+    age INT,
+    email VARCHAR(50)
+);
+
+-- Insert 14 records into customers
+INSERT INTO customers (id, name, age, email) VALUES
+(1, 'Alice', 22, 'alice@mail.com'),
+(2, 'Bob', 17, 'bob@mail.com'),
+(3, 'Charlie', 25, 'charlie@mail.com'),
+(4, 'David', 16, 'david@mail.com'),
+(5, 'Eve', 30, 'eve@mail.com'),
+(6, 'Frank', 19, 'frank@mail.com'),
+(7, 'Grace', 15, 'grace@mail.com'),
+(8, 'Heidi', 40, 'heidi@mail.com'),
+(9, 'Ivan', 14, 'ivan@mail.com'),
+(10, 'Judy', 28, 'judy@mail.com'),
+(11, 'Ken', 12, 'ken@mail.com'),
+(12, 'Leo', 35, 'leo@mail.com'),
+(13, 'Mallory', 21, 'mallory@mail.com'),
+(14, 'Nina', 13, 'nina@mail.com');
+
+-- Create the tickets table
+CREATE TABLE tickets (
+    id INT,
+    ticket VARCHAR(50),
+    seat_number INT
+);
+
+-- Insert records into tickets (notice some customer IDs are missing, and ID 99 has no customer)
+INSERT INTO tickets (id, ticket, seat_number) VALUES
+(1, 'Standard', 101),
+(2, 'Standard', 102),
+(3, 'VIP', 103),
+(5, 'Standard', 104),
+(6, 'VIP', 105),
+(8, 'Standard', 106),
+(9, 'Standard', 107),
+(10, 'VIP', 108),
+(12, 'Standard', 109),
+(13, 'Standard', 110),
+(14, 'Standard', 111),
+(99, 'VIP', 999); 
+
+SELECT * FROM customers;
+SELECT * FROM tickets;
+
+
+
+SELECT c.name, c.age, t.seat_number FROM customers c INNER JOIN tickets t ON c.id = t.id;
+SELECT c.name, t.seat_number FROM customers c INNER JOIN tickets t ON c.id = t.id AND c.age > 18;
+SELECT c.name, c.email FROM customers c INNER JOIN tickets t ON c.id = t.id AND ticket = 'VIP';
+
+SELECT c.name, c.email, COALESCE(CAST(t.seat_number AS VARCHAR), 'no tickets') FROM customers c LEFT JOIN tickets t ON c.id = t.id;
+
+SELECT c.name, COALESCE(t.ticket, 'no ticket') FROM customers c LEFT JOIN tickets t ON c.id = t.id WHERE t.ticket is null;
+
+SELECT t.seat_number, t.ticket FROM tickets t LEFT JOIN customers c ON c.id = t.id WHERE c.id is NULL;
+
+SELECT COALESCE(c.name, 'unreserved'), COALESCE(CAST(t.seat_number AS VARCHAR), 'no tickets') FROM customers c FULL JOIN tickets t ON c.id = t.id 
+
+SELECT c.name, t.seat_number FROM customers c FULL JOIN tickets t on c.id = t.id WHERE c.id is null OR t.id is null;
+SELECT c.name, t.seat_number FROM customers c FULL JOIN tickets t on c.id = t.id WHERE c.id is null AND t.id is null;
+
+SELECT COALESCE(c.name, 'orphan ticket'), COALESCE(CAST(c.age AS VARCHAR), 'orphan ticket'), COALESCE(t.ticket, 'entry rejected'), COALESCE(CAST(t.seat_number AS VARCHAR), 'empty') FROM customers c FULL JOIN tickets t ON c.id = t.id OR c.age > 18; 
+SELECT * FROM customers c CROSS JOIN tickets t
+
+-- SELECT * FROM customers
+-- SELECT * FROM tickeTs
+
+-- Create the employees table
+CREATE TABLE employees (
+    id INT,
+    name VARCHAR(50),
+    manager_id INT
+);
+
+-- Insert 8 records into employees
+INSERT INTO employees (id, name, manager_id) VALUES
+(1, 'Alice', NULL),      -- Alice is the CEO, she has no manager
+(2, 'Bob', 1),           -- Bob reports to Alice
+(3, 'Charlie', 1),       -- Charlie reports to Alice
+(4, 'David', 2),         -- David reports to Bob
+(5, 'Eve', 2),           -- Eve reports to Bob
+(6, 'Frank', 3),         -- Frank reports to Charlie
+(7, 'Grace', NULL),      -- Grace is a consultant, no manager
+(8, 'Heidi', 6);         -- Heidi reports to Frank
+
+Select * from employees ;
+select e.name as employee, m.name as manager FROM employees e LEFT JOIN employees m ON e.manager_id = m.id;
+
+-- Create the sales_2023 table
+CREATE TABLE sales_2023 (
+    id INT,
+    customer_name VARCHAR(50),
+    amount INT
+);
+
+-- Insert 4 records into sales_2023
+INSERT INTO sales_2023 (id, customer_name, amount) VALUES
+(1, 'Alice', 500),
+(2, 'Bob', 200),
+(3, 'Charlie', 800),
+(4, 'David', 150);
+
+-- Create the sales_2024 table (notice it has the EXACT same columns and types)
+CREATE TABLE sales_2024 (
+    id INT,
+    customer_name VARCHAR(50),
+    amount INT
+);
+
+-- Insert 4 records into sales_2024
+-- Notice Alice and Charlie appear here too! This will be important for UNION vs UNION ALL.
+INSERT INTO sales_2024 (id, customer_name, amount) VALUES
+(1, 'Alice', 600),
+(2, 'Eve', 300),
+(3, 'Charlie', 800),  -- Exact duplicate of the 2023 Charlie row
+(4, 'Frank', 400);
+
+select customer_name, amount from sales_2023 UNION select customer_name, amount from sales_2024;
+select customer_name, amount from sales_2023 WHERE amount > 250 UNION select customer_name, amount from sales_2024 WHERE amount > 250;
+
+select customer_name, amount from sales_2023 INTERSECT select customer_name, amount from sales_2024;
+select customer_name, amount from sales_2023 except select customer_name, amount from sales_2024;
